@@ -11,7 +11,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { execSync } from "child_process";
 import {
-  getDb, authCheck, REPLIT_FILE_WORKSPACE_ROOT,
+  getDb, authCheck, REPLIT_FILE_WORKSPACE_ROOT, DB_PATH,
 } from "./zombrains-shared.js";
 import {
   db as pgDb,
@@ -1573,6 +1573,29 @@ router.get("/zombrains/persist/provider-failure-rates", (req: Request, res: Resp
     }
     res.json({ ok: true, rates });
   } finally { db.close(); }
+});
+
+// ── Admin: import raw SQLite DB (one-time seed) ───────────────────────────────
+// POST /zombrains/admin/import-db  { db: '<base64-encoded bytes>' }
+// Protected by Authorization: Bearer <ADMIN_SECRET>.
+// Writes the decoded bytes directly to DB_PATH — overwrites whatever is there.
+// Use only for the initial Railway volume seed; never call during normal operation.
+router.post("/zombrains/admin/import-db", (req: Request, res: Response) => {
+  if (!authCheck(req, res)) return;
+  const { db: b64 } = req.body as { db?: string };
+  if (!b64 || typeof b64 !== "string") {
+    res.status(400).json({ error: "body must have { db: '<base64 string>' }" });
+    return;
+  }
+  try {
+    const bytes = Buffer.from(b64, "base64");
+    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+    fs.writeFileSync(DB_PATH, bytes);
+    res.json({ ok: true, bytes: bytes.length, path: DB_PATH });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    res.status(500).json({ ok: false, error: msg });
+  }
 });
 
 export default router;
