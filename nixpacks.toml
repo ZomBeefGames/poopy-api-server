@@ -1,0 +1,11 @@
+# nixpacks.toml — repo root config for the api-server Railway service.
+# ZomBrains uses builder-agent/nixpacks.toml (separate service, separate root).
+
+[phases.setup]
+# python3 + make + g++ needed by better-sqlite3 node-gyp compilation.
+aptPkgs = ["python3", "make", "g++"]
+
+[phases.install]
+# Skip postinstall scripts (avoids better-sqlite3 gyp failing before build tools are ready).
+# The buildCommand in railway.toml handles `pnpm rebuild better-sqlite3` in the build phase.
+cmds = ["npm install -g pnpm && pnpm install --no-frozen-lockfile --ignore-scripts"]

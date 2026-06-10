@@ -1,0 +1,6 @@
+packages:
+  - 'artifacts/api-server'
+  - 'lib/db'
+  - 'lib/api-zod'
+  - 'lib/poo-ships-data'
+

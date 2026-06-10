@@ -1,0 +1,26 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm install -g pnpm && pnpm install --no-frozen-lockfile && pnpm rebuild better-sqlite3 && pnpm exec tsc --build && pnpm --filter @workspace/api-server run build"
+
+[deploy]
+releaseCommand = "sh -c 'if [ -n \"$DATABASE_URL\" ]; then pnpm --filter @workspace/db run push-force; else echo \"No DATABASE_URL — skipping migration\"; fi'"
+startCommand = "node --enable-source-maps artifacts/api-server/dist/index.mjs"
+healthcheckPath = "/api/healthz"
+healthcheckTimeout = 120
+
+# Required environment variables — set these in the Railway project dashboard:
+#
+#   PORT              — set automatically by Railway
+#   DATABASE_URL      — not used (api-server uses SQLite); set DB_PATH if needed
+#   ADMIN_SECRET      — same secret used across Poopy bot admin panel
+#   ZOMBRAINS_REPORT_URL — leave blank on first deploy; set to this service's URL
+#                          (e.g. https://your-service.up.railway.app/api/zombrains/report)
+#                          once deployed so the watchdog callback URL stays stable
+#
+#   AI provider keys (at least one required for the mini-agent):
+#   POOPY_GROQ_API_KEY
+#   POOPY_CEREBRAS_API_KEY
+#   POOPY_SAMBANOVA_API_KEY
+#   POOPY_GEMINI_API_KEY
+#   POOPY_MISTRAL_API_KEY
+#   POOPY_OPENROUTER_API_KEY
