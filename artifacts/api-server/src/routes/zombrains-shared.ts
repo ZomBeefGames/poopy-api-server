@@ -11,7 +11,10 @@ import { fileURLToPath } from "url";
 import { callProvider, type Msg } from "../lib/providers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const DB_PATH = path.resolve(__dirname, "..", "..", "..", "poop_tracker.db");
+const _volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+export const DB_PATH = _volumeRoot
+  ? path.join(_volumeRoot, "poop_tracker.db")
+  : path.resolve(__dirname, "..", "..", "..", "poop_tracker.db");
 
 function getDb() {
   const db = new Database(DB_PATH);
